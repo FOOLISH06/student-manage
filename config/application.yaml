@@ -1,0 +1,10 @@
+server:
+  port: 8088
+
+datasource:
+  username: root
+  password: 123456
+  host: localhost
+  port: 3306
+  database: stu_manage_system
+  charset: utf8
