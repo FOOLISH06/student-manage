@@ -9,8 +9,7 @@ import (
 	"student-manage/model"
 )
 
-// AuthMiddleware 中间件：验证token
-func AuthMiddleware() gin.HandlerFunc {
+func AuthSuperManagerMid() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// 获取 Authorization Header
 		tokenString := ctx.GetHeader("Authorization")
@@ -47,9 +46,15 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// 用户存在，将 user 的信息写入上下文
-		ctx.Set("user", manager)
+		// 用户存在，但不是超级管理员
+		if manager.IsSuperManager == false {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "权限不足"})
+			log.Println("user is not super manager, userId: ", userId)
+			ctx.Abort()
+			return
+		}
 
+		// 是超级管理员，继续
 		ctx.Next()
 	}
 }

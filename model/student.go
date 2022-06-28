@@ -1,9 +1,7 @@
 package model
 
-import "gorm.io/gorm"
-
 type Student struct {
-	gorm.Model
+	ID    uint   `gorm:"primarykey"`
 	Sid   string `gorm:"varchar(20);not null;unique"`
 	Name  string `gorm:"varchar(20);not null"`
 	Sex   string `gorm:"varchar(5);not null"`

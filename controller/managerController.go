@@ -7,56 +7,10 @@ import (
 	"log"
 	"net/http"
 	"student-manage/common"
+	"student-manage/dto"
 	"student-manage/model"
 	"student-manage/response"
 )
-
-// Register 管理员注册
-func Register(ctx *gin.Context) {
-	db := common.GetDB()
-
-	// 获取参数
-	name := ctx.PostForm("name")
-	telephone := ctx.PostForm("telephone")
-	password := ctx.PostForm("password")
-
-	// 数据验证，失败则返回“请求格式错误”
-	if len(telephone) != 11 {
-		response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "手机号必须为11位")
-		return
-	}
-	if len(password) < 6 {
-		response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "密码不能小于6位")
-		return
-	}
-	if len(name) == 0 {
-		response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "用户名不能为空")
-		return
-	}
-
-	// 判断手机号是否存在
-	if isTelephoneExit(db, telephone) {
-		response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "手机号已存在")
-		return
-	}
-
-	// 创建用户（需要加密）
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		response.Response(ctx, http.StatusInternalServerError, 500, nil, "加密错误")
-		return
-	}
-
-	newUser := &model.Manager{
-		Name:      name,
-		Telephone: telephone,
-		Password:  string(hashedPassword),
-	}
-	db.Create(&newUser)
-
-	// 返回结果
-	response.Success(ctx, nil, "注册成功")
-}
 
 // Login 管理员登录
 func Login(ctx *gin.Context) {
@@ -98,8 +52,60 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
+	// 返回结果：token + manager(name+telephone)
+	response.Success(ctx, gin.H{"token": token, "manager": dto.ToManagerDto(manager)}, "登录成功")
+}
+
+// Register 管理员注册（只有超级管理员才能注册其他管理员）
+func Register(ctx *gin.Context) {
+	db := common.GetDB()
+
+	// 获取参数
+	name := ctx.PostForm("name")
+	telephone := ctx.PostForm("telephone")
+	password := ctx.PostForm("password")
+	var isSuper bool = false
+	if _, status := ctx.GetPostForm("isSuper"); status {
+		isSuper = true
+	}
+
+	// 数据验证，失败则返回“请求格式错误”
+	if len(telephone) != 11 {
+		response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "手机号必须为11位")
+		return
+	}
+	if len(password) < 6 {
+		response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "密码不能小于6位")
+		return
+	}
+	if len(name) == 0 {
+		response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "用户名不能为空")
+		return
+	}
+
+	// 判断手机号是否存在
+	if isTelephoneExit(db, telephone) {
+		response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "手机号已存在")
+		return
+	}
+
+	// 创建用户（需要加密）
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		response.Response(ctx, http.StatusInternalServerError, 500, nil, "加密错误")
+		return
+	}
+
+	newManager := &model.Manager{
+		Name:           name,
+		Telephone:      telephone,
+		Password:       string(hashedPassword),
+		IsSuperManager: isSuper,
+	}
+	db.Create(&newManager)
+
 	// 返回结果
-	response.Success(ctx, gin.H{"token": token}, "登录成功")
+	response.Success(ctx, nil, "注册成功")
 }
 
 func isTelephoneExit(db *gorm.DB, telephone string) bool {
