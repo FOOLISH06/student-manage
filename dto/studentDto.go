@@ -1,14 +1,17 @@
 package dto
 
-import "student-manage/model"
+import (
+	"strconv"
+	"student-manage/model"
+)
 
 type StudentDto struct {
-	Sid   string `json:"学号"`
-	Name  string `json:"姓名"`
-	Sex   string `json:"性别"`
-	Age   int    `json:"年龄"`
-	Major string `json:"专业"`
-	Class string `json:"班级"`
+	Sid   string `json:"sid"`
+	Name  string `json:"name"`
+	Sex   string `json:"sex"`
+	Age   string `json:"age"`
+	Major string `json:"major"`
+	Class string `json:"class"`
 }
 
 func ToStudentDtos(students ...model.Student) []StudentDto {
@@ -18,7 +21,7 @@ func ToStudentDtos(students ...model.Student) []StudentDto {
 			Sid:   student.Sid,
 			Name:  student.Name,
 			Sex:   student.Sex,
-			Age:   student.Age,
+			Age:   strconv.Itoa(student.Age),
 			Major: student.Major,
 			Class: student.Class,
 		}

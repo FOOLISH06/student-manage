@@ -29,7 +29,7 @@ func GetStudentById(ctx *gin.Context) {
 
 	var student model.Student
 	db.Where("sid = ?", sid).First(&student)
-	response.Success(ctx, gin.H{"student": dto.ToStudentDtos(student)}, "查询成功")
+	response.Success(ctx, gin.H{"students": dto.ToStudentDtos(student)}, "查询成功")
 }
 
 // GetStudentsByClass 通过班级获取学生信息 (Get)
@@ -41,7 +41,7 @@ func GetStudentsByClass(ctx *gin.Context) {
 
 	var students []model.Student
 	db.Where("class = ?", class).Find(&students)
-	response.Success(ctx, gin.H{"student": dto.ToStudentDtos(students...)}, "查询成功")
+	response.Success(ctx, gin.H{"students": dto.ToStudentDtos(students...)}, "查询成功")
 }
 
 // CreateStudent 添加学生 (Post)
@@ -49,12 +49,22 @@ func CreateStudent(ctx *gin.Context) {
 	db := common.GetDB()
 
 	// 获取参数
-	sid := ctx.PostForm("sid")
-	name := ctx.PostForm("name")
-	sex := ctx.PostForm("sex")
-	major := ctx.PostForm("major")
-	class := ctx.PostForm("class")
-	age, _ := strconv.Atoi(ctx.PostForm("age"))
+	json := make(map[string]interface{})
+	ctx.BindJSON(&json)
+	sid := json["sid"].(string)
+	name := json["name"].(string)
+	sex := json["sex"].(string)
+	major := json["major"].(string)
+	class := json["class"].(string)
+	age, _ := strconv.Atoi(json["age"].(string))
+
+	for _, val := range json {
+		s := val.(string)
+		if len(s) == 0 {
+			response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "关键信息不能为空")
+			return
+		}
+	}
 
 	// 如果学生已存在，添加失败
 	if isStudentExit(db, sid) {
@@ -80,12 +90,14 @@ func UpdateStudent(ctx *gin.Context) {
 	db := common.GetDB()
 
 	// 获取参数 (form)
-	sid := ctx.PostForm("sid")
-	name := ctx.PostForm("name")
-	sex := ctx.PostForm("sex")
-	major := ctx.PostForm("major")
-	class := ctx.PostForm("class")
-	age, _ := strconv.Atoi(ctx.PostForm("age"))
+	json := make(map[string]interface{})
+	ctx.BindJSON(&json)
+	sid := json["sid"].(string)
+	name := json["name"].(string)
+	sex := json["sex"].(string)
+	major := json["major"].(string)
+	class := json["class"].(string)
+	age, _ := strconv.Atoi(json["age"].(string))
 
 	// 如果学生不存在，修改失败
 	if !isStudentExit(db, sid) {

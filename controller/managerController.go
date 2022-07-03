@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -17,8 +18,14 @@ func Login(ctx *gin.Context) {
 	db := common.GetDB()
 
 	// 获取参数
-	telephone := ctx.PostForm("telephone")
-	password := ctx.PostForm("password")
+	//telephone := ctx.PostForm("telephone")
+	//password := ctx.PostForm("password")
+	json := make(map[string]interface{})
+	ctx.BindJSON(&json)
+	telephone := json["telephone"].(string)
+	password := json["password"].(string)
+	fmt.Println("telephone: ", telephone)
+	fmt.Println("password: ", password)
 
 	// 参数验证
 	if len(telephone) != 11 {
@@ -61,13 +68,15 @@ func Register(ctx *gin.Context) {
 	db := common.GetDB()
 
 	// 获取参数
-	name := ctx.PostForm("name")
-	telephone := ctx.PostForm("telephone")
-	password := ctx.PostForm("password")
-	var isSuper bool = false
-	if _, status := ctx.GetPostForm("isSuper"); status {
-		isSuper = true
-	}
+	json := make(map[string]interface{})
+	ctx.BindJSON(&json)
+	telephone := json["telephone"].(string)
+	password := json["password"].(string)
+	name := json["name"].(string)
+	var isSuper bool = json["isSuper"].(bool)
+	//if _, status := ctx.GetPostForm("isSuper"); status {
+	//	isSuper = true
+	//}
 
 	// 数据验证，失败则返回“请求格式错误”
 	if len(telephone) != 11 {

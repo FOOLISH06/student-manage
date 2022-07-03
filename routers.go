@@ -7,6 +7,7 @@ import (
 )
 
 func collectRouter(router *gin.Engine) *gin.Engine {
+	router.Use(middleware.Cors())
 	root := router.Group("/studentMS")
 
 	// 管理者api
