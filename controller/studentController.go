@@ -140,3 +140,22 @@ func isStudentExit(db *gorm.DB, sid string) bool {
 	}
 	return false
 }
+
+func StudentLogin(c *gin.Context) {
+	db := common.GetDB()
+	json := make(map[string]interface{})
+	c.BindJSON(&json)
+	sid := json["sid"].(string)
+	name := json["name"].(string)
+	var student *model.Student
+	db.Where("sid = ?", sid).First(&student)
+	if student.ID != 0 && student.Name == name {
+		response.Success(c, nil, "学生登录成功")
+	} else {
+		response.Response(c, http.StatusUnprocessableEntity, 422, nil, "学生不存在")
+	}
+}
+
+func StudentGet(c *gin.Context) {
+	GetStudents(c)
+}

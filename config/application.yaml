@@ -2,9 +2,9 @@ server:
   port: 8099
 
 datasource:
-  username: root
+  username: stu_manage
   password: 123456
   host: localhost
   port: 3306
-  database: stu_manage_system
+  database: stu_manage
   charset: utf8

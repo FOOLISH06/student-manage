@@ -36,7 +36,7 @@ func InitConfig() {
 		log.Fatalln("InitConfig() get error: ", err.Error())
 	}
 
-	viper.SetConfigName("application")
+	viper.SetConfigName("applicationDev")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(workDir + "/config")
 	err = viper.ReadInConfig()

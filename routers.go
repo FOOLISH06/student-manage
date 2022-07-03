@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"student-manage/controller"
 	"student-manage/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
 func collectRouter(router *gin.Engine) *gin.Engine {
@@ -24,5 +25,9 @@ func collectRouter(router *gin.Engine) *gin.Engine {
 	student.POST("/", controller.CreateStudent)                 // 添加学生
 	student.PUT("/", controller.UpdateStudent)                  // 通过学号修改学生信息
 	student.DELETE("/:sid", controller.DeleteStudent)           // 通过学号删除学生
+
+	// 访客（学生，只能查询所有学生信息）
+	root.POST("/student/login", controller.StudentLogin)
+	root.GET("/student/get", controller.StudentGet)
 	return router
 }
